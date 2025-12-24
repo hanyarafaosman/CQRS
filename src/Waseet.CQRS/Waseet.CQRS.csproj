@@ -9,11 +9,11 @@
     
     <!-- NuGet Package Properties -->
     <PackageId>Waseet.CQRS</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>Waseet.CQRS Contributors</Authors>
     <Company>Waseet.CQRS</Company>
-    <Description>Waseet (وسيط) - A lightweight, high-performance mediator library for .NET with Arab identity. Implements the Mediator pattern for CQRS architecture with built-in validation, authorization, caching, performance monitoring, and audit logging. An alternative to MediatR with enterprise features included.</Description>
-    <PackageTags>waseet;cqrs;mediator;command;query;pattern;architecture;arabic;arab;validation;authorization;caching;monitoring;audit;events;streaming;elasticsearch</PackageTags>
+    <Description>Waseet (وسيط) - A lightweight, high-performance mediator library for .NET with Arab identity. Implements the Mediator pattern for CQRS architecture with built-in validation, authorization, caching, performance monitoring, audit logging, and idempotency. An alternative to MediatR with enterprise features included.</Description>
+    <PackageTags>waseet;cqrs;mediator;command;query;pattern;architecture;arabic;arab;validation;authorization;caching;monitoring;audit;idempotency;events;streaming;elasticsearch</PackageTags>
     <PackageProjectUrl>https://github.com/yourusername/waseet-cqrs</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/yourusername/waseet-cqrs</RepositoryUrl>

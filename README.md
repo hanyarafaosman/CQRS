@@ -14,6 +14,7 @@ Created by Arab developers, for the world 🌍
 - **Response Caching**: Attribute-based caching with automatic invalidation
 - **Performance Monitoring**: Built-in request performance tracking and statistics
 - **Audit Logging**: Automatic audit logging with Elasticsearch support
+- **Idempotency**: Prevent duplicate command execution with automatic key-based deduplication
 - **Pipeline Behaviors**: Support for cross-cutting concerns with ordered execution
 - **Stream Support**: Process large datasets efficiently with `IAsyncEnumerable<T>`
 - **Dependency Injection**: Built-in support for Microsoft.Extensions.DependencyInjection
@@ -89,6 +90,7 @@ services.AddWaseetValidation(typeof(Program).Assembly);
 services.AddWaseetCaching();
 services.AddWaseetMonitoring();
 services.AddWaseetAuditing();
+services.AddWaseetIdempotency();
 // Or use Elasticsearch for audit logs
 // services.AddWaseetElasticsearchAuditing("http://localhost:9200", "waseet-audit");
 
@@ -167,6 +169,43 @@ public record CreateUserCommand(string Name, string Email) : IRequest<Guid>;
 
 // Logs include: timestamp, user, request/response data, duration, success status
 ```
+
+### Idempotency
+
+Prevent duplicate command execution with idempotency keys:
+
+```csharp
+// Option 1: Using IIdempotentRequest interface
+[Idempotent(Duration = 3600)] // Cache for 1 hour
+public record CreatePaymentCommand(string IdempotencyKey, decimal Amount) 
+    : IRequest<Guid>, IIdempotentRequest;
+
+// Option 2: Using custom property name
+[Idempotent(Duration = 86400, KeyProperty = "RequestId")]
+public record ProcessOrderCommand(string RequestId, int OrderId) : IRequest<bool>;
+
+// Register the feature
+services.AddWaseetIdempotency();
+
+// Or with custom store
+services.AddWaseetIdempotency(sp => new RedisIdempotencyStore(sp));
+```
+
+**Benefits:**
+- **Prevent Duplicate Processing**: Automatically detects and prevents duplicate command execution
+- **Payment Safety**: Critical for financial transactions to avoid double-charging
+- **Retry Protection**: Safe to retry failed requests without side effects
+- **Cached Responses**: Returns the original response for duplicate requests
+- **Configurable Duration**: Set how long to remember processed requests
+- **Pluggable Storage**: Use memory, Redis, or any custom store
+- **Automatic Key Extraction**: Supports interface-based or property-based keys
+
+**How It Works:**
+1. First request with key "abc123" is processed normally
+2. Response is stored with the idempotency key
+3. Duplicate request with same key returns cached response
+4. No duplicate processing occurs - handler is not called
+5. Keys expire after configured duration
 
 ### Validation
 
@@ -301,6 +340,7 @@ Check the `tests/Waseet.CQRS.Sample` project for a complete working example with
 - Response caching with invalidation
 - Performance monitoring
 - Audit logging
+- Idempotency for duplicate prevention
 - Event-driven architecture with notifications
 - Stream support for large datasets
 
@@ -327,6 +367,7 @@ Check the `tests/Waseet.CQRS.Sample` project for a complete working example with
 | Response Caching | ✅ Built-in | ❌ Requires custom implementation |
 | Performance Monitoring | ✅ Built-in | ❌ Requires custom implementation |
 | Audit Logging | ✅ Built-in | ❌ Requires custom implementation |
+| Idempotency | ✅ Built-in | ❌ Requires custom implementation |
 | Elasticsearch Integration | ✅ Built-in | ❌ |
 | Notifications/Events | ✅ | ✅ |
 | Stream Support | ✅ | ✅ |

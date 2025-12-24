@@ -20,10 +20,11 @@ services.AddWaseet(typeof(Program).Assembly);
 // Add validation support
 services.AddWaseetValidation(typeof(Program).Assembly);
 
-// ✨ Add new features: Caching, Monitoring, and Auditing
+// ✨ Add new features: Caching, Monitoring, Auditing, and Idempotency
 services.AddWaseetCaching();  // Uses in-memory cache
 services.AddWaseetMonitoring(); // Tracks performance
 services.AddWaseetAuditing(); // Tracks changes
+services.AddWaseetIdempotency(); // Prevents duplicate commands
 // services.AddWaseetElasticsearchAuditing(
 //     "https://cashing:9200",
 //     indexPrefix: "waseet-audit",
@@ -211,6 +212,7 @@ Console.WriteLine("✓ Request/Response pattern (Commands & Queries)");
 Console.WriteLine("✓ Response Caching with automatic invalidation");
 Console.WriteLine("✓ Performance Monitoring with statistics");
 Console.WriteLine("✓ Audit Logging (console/Elasticsearch)");
+Console.WriteLine("✓ Idempotency (prevents duplicate commands)");
 Console.WriteLine("✓ Validation with pipeline behaviors");
 Console.WriteLine("✓ Authorization with policies and roles");
 Console.WriteLine("✓ Event-driven architecture (Notifications)");
@@ -218,3 +220,16 @@ Console.WriteLine("✓ Multiple event handlers per event");
 Console.WriteLine("✓ Dependency injection integration");
 Console.WriteLine("✓ Stream support with IAsyncEnumerable");
 
+// Example 17: Idempotency - Create payment (first time)
+Console.WriteLine("\n17. Creating payment with idempotency key...");
+var idempotencyKey = Guid.NewGuid().ToString();
+var payment1 = await mediator.Send(new CreatePaymentCommand(idempotencyKey, 99.99m, "Premium subscription"));
+Console.WriteLine($"   ✓ Payment created with ID: {payment1}");
+
+// Example 18: Idempotency - Duplicate request (should return cached result)
+Console.WriteLine("\n18. Attempting duplicate payment (same idempotency key)...");
+var payment2 = await mediator.Send(new CreatePaymentCommand(idempotencyKey, 99.99m, "Premium subscription"));
+Console.WriteLine($"   ✓ Duplicate prevented! Returned cached payment ID: {payment2}");
+Console.WriteLine($"   ✓ Same ID returned: {payment1 == payment2}");
+
+Console.WriteLine("\n=== Idempotency demonstration complete! ===");

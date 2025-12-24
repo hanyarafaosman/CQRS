@@ -32,13 +32,15 @@ public static class ServiceCollectionExtensions
         // Register pipeline behaviors (order matters)
         // 1. Authorization (security first)
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(Authorization.AuthorizationBehavior<,>));
-        // 2. Caching (check cache after auth)
+        // 2. Idempotency (check if already processed)
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(Idempotency.IdempotencyBehavior<,>));
+        // 3. Caching (check cache after auth & idempotency)
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(Caching.CacheBehavior<,>));
-        // 3. Performance Monitoring (wraps everything)
+        // 4. Performance Monitoring (wraps everything)
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(Monitoring.PerformanceMonitoringBehavior<,>));
-        // 4. Auditing (log the request)
+        // 5. Auditing (log the request)
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(Auditing.AuditBehavior<,>));
-        // 5. Validation (validate before handler)
+        // 6. Validation (validate before handler)
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(Validation.ValidationBehavior<,>));
 
         // Register all request handlers
@@ -213,6 +215,30 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<Auditing.IAuditLogger>(sp =>
             new Auditing.ElasticsearchAuditLogger(elasticsearchUrl, indexPrefix, username, password, ignoreSslErrors));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds idempotency support for CQRS commands.
+    /// </summary>
+    /// <param name="services">The IServiceCollection to add services to.</param>
+    /// <param name="idempotencyStore">Optional custom idempotency store. If not specified, uses MemoryIdempotencyStore.</param>
+    /// <returns>The IServiceCollection so that additional calls can be chained.</returns>
+    public static IServiceCollection AddWaseetIdempotency(this IServiceCollection services, Func<IServiceProvider, Idempotency.IIdempotencyStore>? idempotencyStore = null)
+    {
+        if (services == null)
+            throw new ArgumentNullException(nameof(services));
+
+        // Register idempotency store
+        if (idempotencyStore != null)
+        {
+            services.AddSingleton(idempotencyStore);
+        }
+        else
+        {
+            services.AddSingleton<Idempotency.IIdempotencyStore, Idempotency.MemoryIdempotencyStore>();
+        }
 
         return services;
     }
