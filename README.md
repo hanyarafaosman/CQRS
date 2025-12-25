@@ -31,7 +31,7 @@ dotnet add package Waseet.CQRS
 Or clone and build from source:
 
 ```bash
-git clone https://github.com/hanyarafaosman/waseet-cqrs.git
+git clone https://github.com/hanyarafaosman/CQRS.git
 cd waseet-cqrs
 dotnet build
 ```
